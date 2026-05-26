@@ -1,0 +1,26 @@
+.gocache/
+.venv/
+__pycache__/
+src/gpt/__pycache__/
+corpora/
+samples/
+checkpoints/
+.DS_Store
+
+# Python packaging / local environment noise
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pyc
+
+# Large generated training artifacts
+data/go/*.pt
+data/go/*.payloads.txt
+data/go/*_bpe_tokens.txt
+data/go/bpe_tokens.txt
+
+# Keep small source-controlled examples and tokenizer metadata
+!data/go/bpe_model.json
+!data/go/example_compiled_dataset.pt
+!data/go/example_train_bpe_tokens.txt
+!data/go/example_val_bpe_tokens.txt
