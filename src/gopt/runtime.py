@@ -274,19 +274,22 @@ def sample(config: SamplingConfig) -> None:
     print(sample_text(config))
 
 
-def _prompt_opens_top_level_block(prompt: str) -> bool:
-    stripped = prompt.rstrip()
-    return stripped.endswith("{")
+def _brace_depth(records: list[str]) -> int:
+    opens = sum(1 for record in records if record == "{")
+    closes = sum(1 for record in records if record == "}")
+    return opens - closes
+
+
+def _prompt_has_open_block(prompt: str) -> bool:
+    if not prompt:
+        return False
+    return prompt.count("{") > prompt.count("}")
 
 
 def _should_stop_generation(prompt_records: list[str], generated_records: list[str]) -> bool:
-    prompt_opens = sum(1 for record in prompt_records if record == "{")
-    prompt_closes = sum(1 for record in prompt_records if record == "}")
-    prompt_depth = max(0, prompt_opens - prompt_closes)
-
-    opens = sum(1 for record in generated_records if record == "{")
+    prompt_depth = max(0, _brace_depth(prompt_records))
     closes = sum(1 for record in generated_records if record == "}")
-    generated_depth = prompt_depth + opens - closes
+    generated_depth = prompt_depth + _brace_depth(generated_records)
     return generated_depth <= 0 and closes > 0
 
 
@@ -312,7 +315,7 @@ def sample_text(config: SamplingConfig) -> str:
     prompt_tokens = tokenizer.encode(prompt_records) if prompt_records else [0]
     idx = torch.tensor([prompt_tokens], dtype=torch.long, device=device)
 
-    if _prompt_opens_top_level_block(config.prompt):
+    if _prompt_has_open_block(config.prompt):
         for _ in range(config.max_new_tokens):
             output = model.generate(
                 idx,
