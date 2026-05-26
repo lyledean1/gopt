@@ -274,6 +274,22 @@ def sample(config: SamplingConfig) -> None:
     print(sample_text(config))
 
 
+def _prompt_opens_top_level_block(prompt: str) -> bool:
+    stripped = prompt.rstrip()
+    return stripped.endswith("{")
+
+
+def _should_stop_generation(prompt_records: list[str], generated_records: list[str]) -> bool:
+    prompt_opens = sum(1 for record in prompt_records if record == "{")
+    prompt_closes = sum(1 for record in prompt_records if record == "}")
+    prompt_depth = max(0, prompt_opens - prompt_closes)
+
+    opens = sum(1 for record in generated_records if record == "{")
+    closes = sum(1 for record in generated_records if record == "}")
+    generated_depth = prompt_depth + opens - closes
+    return generated_depth <= 0 and closes > 0
+
+
 def sample_text(config: SamplingConfig) -> str:
     checkpoint = torch.load(config.checkpoint_path, map_location="cpu")
     stoi = checkpoint["vocab"]
@@ -295,11 +311,27 @@ def sample_text(config: SamplingConfig) -> str:
     prompt_records = tokenize_prompt(config.prompt, config.bpe_model_path) if config.prompt else []
     prompt_tokens = tokenizer.encode(prompt_records) if prompt_records else [0]
     idx = torch.tensor([prompt_tokens], dtype=torch.long, device=device)
-    output = model.generate(
-        idx,
-        max_new_tokens=config.max_new_tokens,
-        temperature=config.temperature,
-        top_k=config.top_k,
-    )
-    generated_records = tokenizer.decode(output[0].tolist())
+
+    if _prompt_opens_top_level_block(config.prompt):
+        for _ in range(config.max_new_tokens):
+            output = model.generate(
+                idx,
+                max_new_tokens=1,
+                temperature=config.temperature,
+                top_k=config.top_k,
+            )
+            idx = output
+            generated_records = tokenizer.decode(output[0].tolist())
+            suffix_records = generated_records[len(prompt_records) :]
+            if _should_stop_generation(prompt_records, suffix_records):
+                break
+    else:
+        output = model.generate(
+            idx,
+            max_new_tokens=config.max_new_tokens,
+            temperature=config.temperature,
+            top_k=config.top_k,
+        )
+        generated_records = tokenizer.decode(output[0].tolist())
+
     return render_bpe_records(generated_records)
