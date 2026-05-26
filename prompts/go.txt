@@ -3,12 +3,29 @@ package main
 import "fmt"
 
 func main() {
-    fmt.Println(
 ---
 package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hello")
+---
+package sample
 
 type Node struct {
+	ID string
 ---
-package main
+package sample
 
-func parseExpr(
+func sum(a int, b int) int {
+---
+package sample
+
+import "strings"
+
+func greet(name string) string {
+---
+package sample
+
+func clamp(n int) int {

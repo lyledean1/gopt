@@ -36,11 +36,25 @@ def _run_command(args: list[str], cwd: str) -> bool:
     return result.returncode == 0
 
 
-def _write_go_module(tmpdir: str, sample: str) -> Path:
+def _is_executable_prompt(prompt: str) -> bool:
+    return "func main(" in prompt
+
+
+def _normalize_sample_for_prompt(prompt: str, sample: str) -> str:
+    if _is_executable_prompt(prompt):
+        return sample
+    if sample.startswith("package main\n"):
+        return sample.replace("package main\n", "package sample\n", 1)
+    if sample.startswith("package main\r\n"):
+        return sample.replace("package main\r\n", "package sample\r\n", 1)
+    return sample
+
+
+def _write_go_module(tmpdir: str, prompt: str, sample: str) -> Path:
     temp_path = Path(tmpdir)
     (temp_path / "go.mod").write_text("module sample\n\ngo 1.24.0\n", encoding="utf-8")
     sample_path = temp_path / "main.go"
-    sample_path.write_text(sample, encoding="utf-8")
+    sample_path.write_text(_normalize_sample_for_prompt(prompt, sample), encoding="utf-8")
     return sample_path
 
 
@@ -86,11 +100,11 @@ def eval_go(config: GoEvalConfig) -> None:
         if config.keep_samples:
             out_dir = Path("samples") / f"eval-{sample_index:03d}"
             out_dir.mkdir(parents=True, exist_ok=True)
-            sample_path = _write_go_module(str(out_dir), sample)
+            sample_path = _write_go_module(str(out_dir), prompt, sample)
             workdir = str(out_dir)
         else:
             tmpdir = tempfile.TemporaryDirectory(prefix="gopt-go-eval-")
-            sample_path = _write_go_module(tmpdir.name, sample)
+            sample_path = _write_go_module(tmpdir.name, prompt, sample)
             workdir = tmpdir.name
 
         gofmt_ok = _run_command(["gofmt", "-w", sample_path.name], workdir)
