@@ -1,5 +1,5 @@
 [project]
-name = "gpt"
+name = "gopt"
 version = "0.1.0"
 description = "A tiny Go code model project: build corpus, train, sample, and evaluate."
 readme = "README.md"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-gpt = "gpt.cli:main"
+gopt = "gopt.cli:main"
 
 [dependency-groups]
 dev = [

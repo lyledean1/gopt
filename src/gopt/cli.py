@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 
-from gpt.config import (
+from gopt.config import (
     CompileDatasetConfig,
     GoBPEConfig,
     GoBPESplitConfig,
@@ -18,8 +18,8 @@ from gpt.config import (
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="gpt",
-        description="Train and evaluate a tiny character-level transformer on Go code.",
+        prog="gopt",
+        description="Train and evaluate a small Go code model.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -386,7 +386,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "build-go-corpus":
-        from gpt.go_corpus import build_go_corpus
+        from gopt.go_corpus import build_go_corpus
 
         build_go_corpus(
             GoCorpusConfig(
@@ -398,7 +398,7 @@ def main() -> None:
         return
 
     if args.command == "fetch-go-repos":
-        from gpt.go_repos import fetch_go_repos
+        from gopt.go_repos import fetch_go_repos
 
         fetch_go_repos(
             GoRepoFetchConfig(
@@ -411,7 +411,7 @@ def main() -> None:
         return
 
     if args.command == "tokenize-go":
-        from gpt.go_tokenize import tokenize_go_corpus
+        from gopt.go_tokenize import tokenize_go_corpus
 
         tokenize_go_corpus(
             GoTokenizeConfig(
@@ -423,7 +423,7 @@ def main() -> None:
         return
 
     if args.command == "train-go-bpe":
-        from gpt.go_bpe import train_go_bpe
+        from gopt.go_bpe import train_go_bpe
 
         train_go_bpe(
             GoBPEConfig(
@@ -436,7 +436,7 @@ def main() -> None:
         return
 
     if args.command == "tokenize-go-bpe":
-        from gpt.go_bpe import tokenize_go_bpe
+        from gopt.go_bpe import tokenize_go_bpe
 
         tokenize_go_bpe(
             GoBPETokenizeConfig(
@@ -449,7 +449,7 @@ def main() -> None:
         return
 
     if args.command == "split-go-bpe":
-        from gpt.go_bpe import split_go_bpe_corpus
+        from gopt.go_bpe import split_go_bpe_corpus
 
         split_go_bpe_corpus(
             GoBPESplitConfig(
@@ -465,7 +465,7 @@ def main() -> None:
         return
 
     if args.command == "compile-dataset":
-        from gpt.runtime import compile_dataset
+        from gopt.runtime import compile_dataset
 
         compile_dataset(
             CompileDatasetConfig(
@@ -477,7 +477,7 @@ def main() -> None:
         return
 
     if args.command == "train":
-        from gpt.runtime import train
+        from gopt.runtime import train
 
         train(
             TrainingConfig(
@@ -502,7 +502,7 @@ def main() -> None:
         return
 
     if args.command == "sample":
-        from gpt.runtime import sample
+        from gopt.runtime import sample
 
         sample(
             SamplingConfig(
@@ -517,7 +517,7 @@ def main() -> None:
         return
 
     if args.command == "eval-go":
-        from gpt.go_eval import eval_go
+        from gopt.go_eval import eval_go
 
         eval_go(
             GoEvalConfig(

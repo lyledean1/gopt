@@ -3,7 +3,22 @@ from __future__ import annotations
 from pathlib import Path
 import os
 
-from gpt.config import GoCorpusConfig
+from gopt.config import GoCorpusConfig
+
+
+SKIP_FILE_SUFFIXES = (
+    ".pb.go",
+    ".gen.go",
+    "_gen.go",
+    "_generated.go",
+    "_mock.go",
+    "_easyjson.go",
+    "_string.go",
+)
+
+SKIP_FILE_PREFIXES = (
+    "mock_",
+)
 
 
 def _iter_go_files(config: GoCorpusConfig) -> list[Path]:
@@ -17,9 +32,23 @@ def _iter_go_files(config: GoCorpusConfig) -> list[Path]:
         current_path = Path(current_root)
         for filename in sorted(filenames):
             path = current_path / filename
-            if path.suffix in config.extensions:
+            if path.suffix in config.extensions and not _should_skip_file(path):
                 files.append(path)
     return files
+
+
+def _should_skip_file(path: Path) -> bool:
+    name = path.name
+    if any(name.endswith(suffix) for suffix in SKIP_FILE_SUFFIXES):
+        return True
+    if any(name.startswith(prefix) for prefix in SKIP_FILE_PREFIXES):
+        return True
+
+    try:
+        header = path.read_text(encoding="utf-8", errors="ignore")[:2048]
+    except OSError:
+        return False
+    return "Code generated" in header and "DO NOT EDIT." in header
 
 
 def build_go_corpus(config: GoCorpusConfig) -> None:

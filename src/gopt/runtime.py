@@ -5,10 +5,10 @@ import random
 
 import torch
 
-from gpt.config import CompileDatasetConfig, SamplingConfig, TrainingConfig
-from gpt.data import RecordTokenizer, compile_corpus, load_compiled_corpus, load_corpus, sample_batch
-from gpt.go_bpe import render_bpe_records, tokenize_prompt
-from gpt.model import GPTLanguageModel
+from gopt.config import CompileDatasetConfig, SamplingConfig, TrainingConfig
+from gopt.data import RecordTokenizer, compile_corpus, load_compiled_corpus, load_corpus, sample_batch
+from gopt.go_bpe import render_bpe_records, tokenize_prompt
+from gopt.model import GPTLanguageModel
 
 
 def resolve_device(name: str) -> torch.device:

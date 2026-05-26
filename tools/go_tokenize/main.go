@@ -22,6 +22,20 @@ var skipDirs = map[string]bool{
 	"build":       true,
 }
 
+var skipFileSuffixes = []string{
+	".pb.go",
+	".gen.go",
+	"_gen.go",
+	"_generated.go",
+	"_mock.go",
+	"_easyjson.go",
+	"_string.go",
+}
+
+var skipFilePrefixes = []string{
+	"mock_",
+}
+
 func main() {
 	rootFlag := flag.String("root", "", "root directory containing Go source")
 	outFlag := flag.String("out", "data/go/tokens.txt", "output token stream path")
@@ -83,7 +97,7 @@ func collectGoFiles(root string) ([]string, error) {
 			}
 			return nil
 		}
-		if filepath.Ext(path) == ".go" {
+		if filepath.Ext(path) == ".go" && !shouldSkipFile(path) {
 			files = append(files, path)
 		}
 		return nil
@@ -148,6 +162,28 @@ func writeTokenFile(writer *bufio.Writer, root string, path string, includeFileH
 
 	_, err = writer.WriteString("NEWLINE\nNEWLINE\n")
 	return err
+}
+
+func shouldSkipFile(path string) bool {
+	name := filepath.Base(path)
+	for _, suffix := range skipFileSuffixes {
+		if strings.HasSuffix(name, suffix) {
+			return true
+		}
+	}
+	for _, prefix := range skipFilePrefixes {
+		if strings.HasPrefix(name, prefix) {
+			return true
+		}
+	}
+
+	src, err := os.ReadFile(path)
+	if err != nil {
+		return false
+	}
+	limit := min(len(src), 2048)
+	header := string(src[:limit])
+	return strings.Contains(header, "Code generated") && strings.Contains(header, "DO NOT EDIT.")
 }
 
 func serializeToken(tok token.Token, lit string, preserveValues bool) (string, string) {

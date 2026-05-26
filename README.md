@@ -1,16 +1,27 @@
-# gpt
+# gopt
 
-Tiny Go code model project.
+`gopt` is an attempt at training a small Go code model.
 
-This repo now does one thing:
+It does one thing end to end:
 
-- fetch a representative set of Go repositories
-- build a corpus from `.go` files
-- train a small Go code transformer on that corpus
-- sample Go completions
-- evaluate generated files with `gofmt` and `go build`
+1. fetch a curated set of public Go repos
+2. build a Go-aware tokenized dataset
+3. train a small transformer
+4. sample Go code
+5. evaluate outputs with `gofmt` and `go build`
 
-## Commands
+This is not a general LLM framework. It is a focused repo for experimenting with Go code modeling.
+
+## What This Repo Contains
+
+- `src/gopt/`: Python training, sampling, dataset, and evaluation code
+- `tools/go_tokenize/main.go`: Go lexer/token stream builder
+- `manifests/go_repos.txt`: curated public Go repos used to build the corpus
+- `prompts/go.txt`: prompts used by `eval-go`
+
+Large artifacts like cloned repos, compiled datasets, and checkpoints are intentionally not part of source control.
+
+## Setup
 
 Install dependencies:
 
@@ -21,101 +32,164 @@ uv sync --dev
 Show the CLI:
 
 ```bash
-uv run gpt --help
+uv run gopt --help
 ```
 
-Build a Go corpus from a source tree:
+## Workflow
+
+### 1. Fetch the Go repos
+
+This clones or updates the repos listed in `manifests/go_repos.txt`.
 
 ```bash
-uv run gpt build-go-corpus --root /path/to/go/repos --out data/go/input.txt
+uv run gopt fetch-go-repos \
+  --manifest manifests/go_repos.txt \
+  --out-dir corpora/go
 ```
 
-Fetch a curated set of Go repositories into one local corpus root:
+### 2. Train the BPE tokenizer
+
+This learns subword pieces for identifiers and literals from the Go corpus.
 
 ```bash
-uv run gpt fetch-go-repos --manifest manifests/go_repos.txt --out-dir corpora/go
+uv run gopt train-go-bpe \
+  --root corpora/go \
+  --out data/go/bpe_model.json \
+  --vocab-size 4096
 ```
 
-Then point the tokenizer/split commands at that checkout root:
+### 3. Build randomized train/val splits
+
+This tokenizes the corpus, applies BPE, and splits files into train and validation sets.
 
 ```bash
-uv run gpt split-go-bpe \
+uv run gopt split-go-bpe \
   --root corpora/go \
   --bpe-model data/go/bpe_model.json \
   --train-out data/go/train_bpe_tokens.txt \
   --val-out data/go/val_bpe_tokens.txt
 ```
 
-Tokenize a Go source tree into a text token stream:
+### 4. Compile the dataset
+
+This converts the text token stream into integer ids for faster training.
 
 ```bash
-uv run gpt tokenize-go --root /path/to/go/repos --out data/go/tokens.txt
-```
-
-Train a BPE model over identifier and literal payloads:
-
-```bash
-uv run gpt train-go-bpe --root /path/to/go/repos --out data/go/bpe_model.json
-```
-
-Emit a hybrid Go+BPE token stream:
-
-```bash
-uv run gpt tokenize-go-bpe \
-  --root /path/to/go/repos \
-  --bpe-model data/go/bpe_model.json \
-  --out data/go/bpe_tokens.txt
-```
-
-Build randomized file-level train/val Go+BPE splits:
-
-```bash
-uv run gpt split-go-bpe \
-  --root /path/to/go/repos \
-  --bpe-model data/go/bpe_model.json \
-  --train-out data/go/train_bpe_tokens.txt \
-  --val-out data/go/val_bpe_tokens.txt
-```
-
-Compile the train/val text corpora into integer ids:
-
-```bash
-uv run gpt compile-dataset \
+uv run gopt compile-dataset \
   --dataset data/go/train_bpe_tokens.txt \
   --val-dataset data/go/val_bpe_tokens.txt \
   --out data/go/compiled_dataset.pt
 ```
 
-Train on the corpus:
+### 5. Train the model
+
+Example local run:
 
 ```bash
-uv run gpt train \
+uv run gopt train \
   --dataset data/go/train_bpe_tokens.txt \
   --val-dataset data/go/val_bpe_tokens.txt \
   --compiled-dataset data/go/compiled_dataset.pt \
-  --checkpoint checkpoints/go.pt
+  --checkpoint checkpoints/go-bpe-384x8.pt \
+  --device mps \
+  --steps 10000 \
+  --eval-interval 200 \
+  --eval-batches 10 \
+  --batch-size 8 \
+  --block-size 128 \
+  --d-model 384 \
+  --n-heads 8 \
+  --n-layers 8
 ```
 
-Sample from the trained model:
+Notes:
+
+- training writes the latest checkpoint to the path you pass with `--checkpoint`
+- it also writes the best validation checkpoint next to it as `*.best.pt`
+- if you rebuild the corpus or tokenizer, start a fresh checkpoint instead of resuming
+
+### 6. Sample from the best checkpoint
 
 ```bash
-uv run gpt sample --checkpoint checkpoints/go.pt --prompt "package main\n\nfunc main() {\n"
+uv run gopt sample \
+  --checkpoint checkpoints/go-bpe-384x8.best.pt \
+  --bpe-model data/go/bpe_model.json \
+  --prompt $'package main\n\nfunc main() {\n' \
+  --temperature 0.7 \
+  --top-k 20
 ```
 
-Evaluate generated samples:
+Other useful prompts:
+
+- `if err != nil {\n`
+- `type Node struct {\n`
+- `func NewClient(addr string) (*Client, error) {\n`
+
+### 7. Evaluate outputs
+
+This generates samples, runs `gofmt`, then tries `go build`.
 
 ```bash
-uv run gpt eval-go --checkpoint checkpoints/go.pt --prompt-file prompts/go.txt --samples 5
+uv run gopt eval-go \
+  --checkpoint checkpoints/go-bpe-384x8.best.pt \
+  --bpe-model data/go/bpe_model.json \
+  --prompt-file prompts/go.txt \
+  --samples 10 \
+  --max-new-tokens 200 \
+  --temperature 0.7 \
+  --top-k 20
 ```
 
-## Prompt File Format
+## Corpus Notes
 
-`eval-go` reads prompt blocks separated by a line containing only `---`.
+The corpus is built from public GitHub repositories listed in `manifests/go_repos.txt`.
 
-See [prompts/go.txt](/Users/lyledean/personal/gpt/prompts/go.txt).
+The tokenizer and corpus builder skip low-signal files by default, including:
 
-## Notes
+- vendored directories
+- generated files such as `*.pb.go`
+- common mock/generated suffixes
+- files with `Code generated ... DO NOT EDIT.`
 
-- The starter manifest in [manifests/go_repos.txt](/Users/lyledean/personal/gpt/manifests/go_repos.txt) is intended to bias training toward ordinary Go, not just the Go compiler/runtime codebase.
-- `gofmt` is the first syntax gate.
-- `go build` is the stronger gate for complete generated files.
+The goal is to bias the model toward ordinary Go code rather than compiler/runtime internals or generated blobs.
+
+## Important Files
+
+- `data/go/bpe_model.json`
+  The trained tokenizer model.
+
+- `data/go/train_bpe_tokens.txt`
+- `data/go/val_bpe_tokens.txt`
+  The text token corpora.
+
+- `data/go/compiled_dataset.pt`
+  The compiled integer-id dataset used for training.
+
+- `checkpoints/*.pt`
+  Latest checkpoints.
+
+- `checkpoints/*.best.pt`
+  Best validation checkpoints.
+
+## Current Practical Limits
+
+On an Apple Silicon laptop, the local sweet spot is roughly:
+
+- `d_model=384`
+- `n_layers=8`
+- `n_heads=8`
+- `block_size=128`
+
+Larger models can train locally, but they become harder to optimize well with small batch sizes.
+
+## Why This Exists
+
+The point of this repo is to make the whole pipeline legible:
+
+- corpus design matters
+- tokenization matters
+- train/val split quality matters
+- decoding matters
+- model size matters
+
+It is meant to be small enough to understand, but real enough to learn from.

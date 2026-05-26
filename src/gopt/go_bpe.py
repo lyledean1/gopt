@@ -5,8 +5,8 @@ import json
 import random
 import tempfile
 
-from gpt.config import GoBPEConfig, GoBPESplitConfig, GoBPETokenizeConfig
-from gpt.go_tokenize import run_go_tokenizer
+from gopt.config import GoBPEConfig, GoBPESplitConfig, GoBPETokenizeConfig
+from gopt.go_tokenize import run_go_tokenizer
 from tokenizers import Tokenizer
 from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import ByteLevel
@@ -19,7 +19,7 @@ PUNCT_NO_SPACE_AFTER = {"(", "[", "{", "."}
 
 
 def train_go_bpe(config: GoBPEConfig) -> None:
-    with tempfile.TemporaryDirectory(prefix="gpt-go-bpe-") as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="gopt-go-bpe-") as tmpdir:
         raw_tokens_path = Path(tmpdir) / "raw_tokens.txt"
         run_go_tokenizer(
             root=config.root,
@@ -51,7 +51,7 @@ def train_go_bpe(config: GoBPEConfig) -> None:
 def tokenize_go_bpe(config: GoBPETokenizeConfig) -> None:
     tokenizer = Tokenizer.from_file(config.model_path)
 
-    with tempfile.TemporaryDirectory(prefix="gpt-go-bpe-") as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="gopt-go-bpe-") as tmpdir:
         raw_tokens_path = Path(tmpdir) / "raw_tokens.txt"
         run_go_tokenizer(
             root=config.root,
@@ -82,7 +82,7 @@ def tokenize_go_bpe(config: GoBPETokenizeConfig) -> None:
 def split_go_bpe_corpus(config: GoBPESplitConfig) -> None:
     tokenizer = Tokenizer.from_file(config.model_path)
 
-    with tempfile.TemporaryDirectory(prefix="gpt-go-bpe-split-") as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="gopt-go-bpe-split-") as tmpdir:
         raw_tokens_path = Path(tmpdir) / "raw_tokens.txt"
         run_go_tokenizer(
             root=config.root,
@@ -122,7 +122,7 @@ def split_go_bpe_corpus(config: GoBPESplitConfig) -> None:
 
 def tokenize_prompt(prompt: str, model_path: str) -> list[str]:
     tokenizer = Tokenizer.from_file(model_path)
-    with tempfile.TemporaryDirectory(prefix="gpt-go-prompt-") as tmpdir:
+    with tempfile.TemporaryDirectory(prefix="gopt-go-prompt-") as tmpdir:
         tmp_root = Path(tmpdir)
         prompt_path = tmp_root / "prompt.go"
         prompt_path.write_text(prompt, encoding="utf-8")

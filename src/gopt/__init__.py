@@ -1,4 +1,4 @@
-"""Reference GPT learning project."""
+"""gopt: a small Go code model project."""
 
 __all__ = ["__version__"]
 

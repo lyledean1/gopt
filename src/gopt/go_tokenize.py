@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 import subprocess
 
-from gpt.config import GoTokenizeConfig
+from gopt.config import GoTokenizeConfig
 
 
 def tokenize_go_corpus(config: GoTokenizeConfig) -> None:

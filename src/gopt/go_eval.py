@@ -6,8 +6,8 @@ import shutil
 import subprocess
 import tempfile
 
-from gpt.config import GoEvalConfig, SamplingConfig
-from gpt.runtime import sample_text
+from gopt.config import GoEvalConfig, SamplingConfig
+from gopt.runtime import sample_text
 
 
 PROMPT_SEPARATOR = "\n---\n"
@@ -89,7 +89,7 @@ def eval_go(config: GoEvalConfig) -> None:
             sample_path = _write_go_module(str(out_dir), sample)
             workdir = str(out_dir)
         else:
-            tmpdir = tempfile.TemporaryDirectory(prefix="gpt-go-eval-")
+            tmpdir = tempfile.TemporaryDirectory(prefix="gopt-go-eval-")
             sample_path = _write_go_module(tmpdir.name, sample)
             workdir = tmpdir.name
 

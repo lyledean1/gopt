@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import subprocess
 
-from gpt.config import GoRepoFetchConfig
+from gopt.config import GoRepoFetchConfig
 
 
 def fetch_go_repos(config: GoRepoFetchConfig) -> None:

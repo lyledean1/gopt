@@ -1,4 +1,4 @@
-from gpt.cli import main
+from gopt.cli import main
 
 
 if __name__ == "__main__":

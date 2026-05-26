@@ -1,7 +1,7 @@
 .gocache/
 .venv/
 __pycache__/
-src/gpt/__pycache__/
+src/gopt/__pycache__/
 corpora/
 samples/
 checkpoints/
