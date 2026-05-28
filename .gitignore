@@ -18,6 +18,12 @@ data/go/*.pt
 data/go/*.payloads.txt
 data/go/*_bpe_tokens.txt
 data/go/bpe_tokens.txt
+data/go_thin/
+
+# Generated manifests / discovery output
+manifests/go_repos_discovered.tsv
+manifests/go_repos_discovered.txt
+manifests/go_repos_filtered.txt
 
 # Keep small source-controlled examples and tokenizer metadata
 !data/go/bpe_model.json

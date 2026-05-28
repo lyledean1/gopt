@@ -1,0 +1,31 @@
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hello")
+---
+package sample
+
+type Node struct {
+	ID string
+	Name string
+	Address string
+---
+package sample
+
+func sum(a int, b int) int {
+---
+package sample
+
+func clamp(n int) int {
+---
+package sample
+
+func min(a int, b int) int {
+---
+package sample
+
+import "strings"
+
+func greet(name string) string {

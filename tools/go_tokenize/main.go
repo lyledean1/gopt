@@ -36,6 +36,36 @@ var skipFilePrefixes = []string{
 	"mock_",
 }
 
+var builtinTypeLabels = map[string]string{
+	"any":        "TYPE_ANY",
+	"bool":       "TYPE_BOOL",
+	"byte":       "TYPE_BYTE",
+	"complex64":  "TYPE_COMPLEX64",
+	"complex128": "TYPE_COMPLEX128",
+	"error":      "TYPE_ERROR",
+	"float32":    "TYPE_FLOAT32",
+	"float64":    "TYPE_FLOAT64",
+	"int":        "TYPE_INT",
+	"int8":       "TYPE_INT8",
+	"int16":      "TYPE_INT16",
+	"int32":      "TYPE_INT32",
+	"int64":      "TYPE_INT64",
+	"rune":       "TYPE_RUNE",
+	"string":     "TYPE_STRING",
+	"uint":       "TYPE_UINT",
+	"uint8":      "TYPE_UINT8",
+	"uint16":     "TYPE_UINT16",
+	"uint32":     "TYPE_UINT32",
+	"uint64":     "TYPE_UINT64",
+	"uintptr":    "TYPE_UINTPTR",
+}
+
+var predeclaredIdentLabels = map[string]string{
+	"false": "CONST_FALSE",
+	"nil":   "NIL",
+	"true":  "CONST_TRUE",
+}
+
 func main() {
 	rootFlag := flag.String("root", "", "root directory containing Go source")
 	outFlag := flag.String("out", "data/go/tokens.txt", "output token stream path")
@@ -189,6 +219,12 @@ func shouldSkipFile(path string) bool {
 func serializeToken(tok token.Token, lit string, preserveValues bool) (string, string) {
 	switch tok {
 	case token.IDENT:
+		if label, ok := builtinTypeLabels[lit]; ok {
+			return label, ""
+		}
+		if label, ok := predeclaredIdentLabels[lit]; ok {
+			return label, ""
+		}
 		if preserveValues {
 			return "IDENT", lit
 		}

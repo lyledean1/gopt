@@ -1,0 +1,41 @@
+repo	license	include	notes
+spf13/cobra	Apache-2.0	y	cli
+spf13/viper	MIT	y	config
+urfave/cli	MIT	y	cli
+fatih/color	MIT	y	utility
+sirupsen/logrus	MIT	y	logging
+rs/zerolog	MIT	y	logging
+go-chi/chi	MIT	y	http
+gin-gonic/gin	MIT	y	http
+labstack/echo	MIT	y	http
+gorilla/mux	BSD-3-Clause	y	http
+go-resty/resty	MIT	y	http client
+jackc/pgx	MIT	y	db
+redis/go-redis	BSD-2-Clause	y	db
+go-gorm/gorm	MIT	y	db
+Masterminds/squirrel	MIT	y	db
+sqlc-dev/sqlc	MIT	y	tooling
+jmoiron/sqlx	MIT	y	db
+stretchr/testify	MIT	y	testing
+onsi/ginkgo	MIT	y	testing
+onsi/gomega	MIT	y	testing
+google/go-github	BSD-3-Clause	y	api client but hand-written enough
+grpc/grpc-go	Apache-2.0	y	rpc
+nats-io/nats.go	Apache-2.0	y	messaging
+hashicorp/consul	MPL-2.0	y	infra
+hashicorp/raft	MPL-2.0	y	infra
+traefik/traefik	MIT	y	infra
+helm/helm	Apache-2.0	y	infra
+prometheus/client_golang	Apache-2.0	y	metrics
+prometheus/prometheus	Apache-2.0	y	real app
+golang-migrate/migrate	MIT	y	tooling
+air-verse/air	GPL-3.0	n	copyleft; exclude for now
+charmbracelet/bubbletea	MIT	y	tui
+charmbracelet/lipgloss	MIT	y	tui
+spf13/afero	Apache-2.0	y	fs
+kubernetes/client-go	Apache-2.0	y	k8s
+helmfile/helmfile	MIT	y	k8s
+containerd/containerd	Apache-2.0	y	runtime
+moby/moby	Apache-2.0	y	runtime
+aws/aws-sdk-go-v2	Apache-2.0	n	exclude; too generated
+googleapis/google-cloud-go	Apache-2.0	n	exclude; too generated

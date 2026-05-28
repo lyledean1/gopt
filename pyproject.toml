@@ -11,6 +11,8 @@ dependencies = [
     "numpy>=2.4.6",
     "tokenizers>=0.20",
     "torch>=2.5",
+    "tree-sitter>=0.25.2",
+    "tree-sitter-go>=0.25.0",
 ]
 
 [project.scripts]

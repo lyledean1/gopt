@@ -4,6 +4,8 @@ set -euo pipefail
 REPO_DIR="${REPO_DIR:-/root/gopt}"
 REPO_URL="${REPO_URL:-https://github.com/lyledean1/gopt}"
 GO_VERSION="${GO_VERSION:-1.25.0}"
+HF_DATA_URI="${HF_DATA_URI:-hf://buckets/lyledean/gopt/data/go_thin}"
+DOWNLOAD_GO_THIN="${DOWNLOAD_GO_THIN:-1}"
 
 if [ ! -d "$REPO_DIR" ]; then
   git clone "$REPO_URL" "$REPO_DIR"
@@ -25,7 +27,16 @@ export PATH="$HOME/.local/bin:/usr/local/go/bin:$PATH"
 
 uv sync --dev
 
-mkdir -p corpora/go data/go checkpoints samples
+if ! command -v hf >/dev/null 2>&1; then
+  uv tool install "huggingface_hub[cli]"
+fi
+
+mkdir -p corpora/go corpora/go_thin data/go data/go_thin checkpoints samples
+
+if [ "$DOWNLOAD_GO_THIN" = "1" ] && [ -n "$HF_DATA_URI" ]; then
+  echo "Syncing go_thin artifacts from $HF_DATA_URI"
+  hf sync "$HF_DATA_URI" ./data/go_thin
+fi
 
 echo
 echo "Environment ready in $REPO_DIR"
