@@ -16,6 +16,32 @@ from tokenizers.trainers import BpeTrainer
 PAYLOAD_LABELS = {"IDENT", "INT", "FLOAT", "IMAG", "CHAR", "STRING"}
 PUNCT_NO_SPACE_BEFORE = {".", ",", ";", ")", "]", "}", ":"}
 PUNCT_NO_SPACE_AFTER = {"(", "[", "{", "."}
+RENDER_LABELS = {
+    "TYPE_ANY": "any",
+    "TYPE_BOOL": "bool",
+    "TYPE_BYTE": "byte",
+    "TYPE_COMPLEX64": "complex64",
+    "TYPE_COMPLEX128": "complex128",
+    "TYPE_ERROR": "error",
+    "TYPE_FLOAT32": "float32",
+    "TYPE_FLOAT64": "float64",
+    "TYPE_INT": "int",
+    "TYPE_INT8": "int8",
+    "TYPE_INT16": "int16",
+    "TYPE_INT32": "int32",
+    "TYPE_INT64": "int64",
+    "TYPE_RUNE": "rune",
+    "TYPE_STRING": "string",
+    "TYPE_UINT": "uint",
+    "TYPE_UINT8": "uint8",
+    "TYPE_UINT16": "uint16",
+    "TYPE_UINT32": "uint32",
+    "TYPE_UINT64": "uint64",
+    "TYPE_UINTPTR": "uintptr",
+    "NIL": "nil",
+    "CONST_TRUE": "true",
+    "CONST_FALSE": "false",
+}
 
 
 def train_go_bpe(config: GoBPEConfig) -> None:
@@ -223,7 +249,7 @@ def render_bpe_records(records: list[str]) -> str:
 
         flush_pending_semicolon(label)
         flush_payload()
-        _append_plain(label)
+        _append_plain(RENDER_LABELS.get(label, label))
 
     flush_pending_semicolon(None)
     flush_payload()

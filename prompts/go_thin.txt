@@ -1,0 +1,55 @@
+package sample
+
+import "context"
+
+type Config struct {
+	Name string
+	TimeoutMs int
+---
+package sample
+
+func sum(a int, b int) int {
+---
+package sample
+
+func clamp(n int, min int, max int) int {
+---
+package sample
+
+func min(a int, b int) int {
+---
+package sample
+
+import "strings"
+
+func greet(name string) string {
+---
+package sample
+
+func isZero(n int) bool {
+---
+package sample
+
+import "net/http"
+
+func withHeader(h http.Handler, key string, value string) http.Handler {
+---
+package sample
+
+type Node struct {
+	ID string
+	Name string
+	Address string
+---
+package sample
+
+import "time"
+
+type Job struct {
+	ID string
+	CreatedAt time.Time
+	Status string
+---
+package sample
+
+func max(a int, b int) int {

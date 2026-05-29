@@ -6,7 +6,7 @@ corpora/
 samples/
 checkpoints/
 .DS_Store
-
+/cache
 # Python packaging / local environment noise
 .pytest_cache/
 .mypy_cache/
